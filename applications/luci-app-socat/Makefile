@@ -12,7 +12,7 @@ rm -rf /tmp/luci-modulecache/
 /sbin/set_at_port.sh
 exit 0
 endef
-	
-include $(TOPDIR)/feeds/luci/luci.mk
-	
+
+include ../../luci.mk
+
 # call BuildPackage - OpenWrt buildroot signature
