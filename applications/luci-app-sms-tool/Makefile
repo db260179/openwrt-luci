@@ -10,8 +10,8 @@ LUCI_PKGARCH:=all
 LUCI_DEPENDS:=+sms-tool +kmod-usb-serial +kmod-usb-serial-option +luci-compat
 PKG_VERSION:=1.9.5-20220816
 
-include $(TOPDIR)/feeds/luci/luci.mk
+PKG_LICENSE:=GPLv3
 
-$(eval $(call BuildPackage,$(PKG_NAME)))
+include ../../luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature

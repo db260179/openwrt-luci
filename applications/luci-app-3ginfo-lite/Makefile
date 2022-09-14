@@ -10,8 +10,8 @@ LUCI_PKGARCH:=all
 LUCI_DEPENDS:=+sms-tool
 PKG_VERSION:=1.0.25-20220912
 
-include $(TOPDIR)/feeds/luci/luci.mk
+PKG_LICENSE:=Apache-2.0
 
-$(eval $(call BuildPackage,$(PKG_NAME)))
+include ../../luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
