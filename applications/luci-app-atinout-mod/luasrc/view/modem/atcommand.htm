@@ -1,9 +1,8 @@
 <%+header%>
-<!--    
-
-    Copyright 2020-2021 Rafał Wabik (IceG) - From eko.one.pl forum
-    Licensed to the GNU General Public License v3.0.
-
+<!--
+    This module gives some convinience to access the shell via web, in
+    case that you don't have a uart console or telnet/ssh connection.
+    Hua Shao <nossiac@163.com>
 -->
 <h2><%:AT Commands%></h2>
 	<label><%:Web UI for sending AT Commands.%></label>
@@ -55,15 +54,16 @@ window.onload = function readUSER() {
 
 					for(var d=0;d<=count;d++)
 						{
-    			    				var opt = document.createElement('option');
+    			    		var opt = document.createElement('option');
+
 							var s = json[d].usd;
 							var fields = s.split(/;/);
 							var name = fields[0];
 							var code = fields[1];
 							opt.text = name;
 							opt.value = code.trim();
-    					    		opt.innerHTML = name;
-    							select.appendChild(opt);
+    					    opt.innerHTML = name;
+    						select.appendChild(opt);
 						}
 
 			}
@@ -88,16 +88,21 @@ function postcmd(cmd) {
     (new XHR()).post("<%=luci.dispatcher.build_url("admin", "modem", "webcmd")%>", {"cmd":cmd}, function(x) {
         console.log(x.response)
         console.log(x)
+
 	var aStr = x.response;
-	newStr = aStr.substring(0, aStr.indexOf('OK') + 'OK'.length);
 	var myre = /(^[ \t]*\n)/gm;
-	var bStr = newStr.replace(myre,"");
+	var bStr = aStr.replace(myre,"");
+
         document.getElementById("result").innerHTML = bStr;
     });
     return false;
 }
+
+
 document.addEventListener('DOMContentLoaded', function (ev) {var button = document.getElementById("sendcmd");
         button.addEventListener("click", function () {
+
+
 		var s = document.getElementById("code").value;
 		if ( s.length == 0 )
 		{
@@ -125,3 +130,4 @@ document.addEventListener('DOMContentLoaded', function (ev) {var button = docume
 </script>
 
 <%+footer%>
+

@@ -15,7 +15,7 @@ module("luci.controller.modem.atc", package.seeall)
 
 function index()
 	entry({"admin", "modem"}, firstchild(), "Modem", 30).dependent=false
-	entry({"admin", "modem", "atc"}, alias("admin", "modem", "atc", "atcommand"), translate("AT Commands"), 10).acl_depends={ "luci-app-socat" }
+	entry({"admin", "modem", "atc"}, alias("admin", "modem", "atc", "atcommand"), translate("AT Commands"), 10).acl_depends={ "luci-app-atinout-mod" }
  	entry({"admin", "modem", "atc", "atcommand"},template("modem/atcommand"),translate("AT Commands"), 10)
 	entry({"admin", "modem", "atc", "atconfig"},cbi("modem/atconfig"),translate("Configuration"), 20)
 	entry({"admin", "modem", "webcmd"}, call("webcmd"))
@@ -27,7 +27,7 @@ end
 function webcmd()
     local cmd = http.formvalue("cmd")
     if cmd then
-	    local at = io.popen("/usr/bin/luci-app-socat " ..cmd:gsub("[$]", "\\\$"):gsub("\"", "\\\"").." 2>&1")
+	    local at = io.popen("/usr/bin/luci-app-atinout " ..cmd:gsub("[$]", "\\\$"):gsub("\"", "\\\"").." 2>&1")
 	    local result =  at:read("*a")
 	    at:close()
         http.write(tostring(result))
@@ -37,8 +37,8 @@ function webcmd()
 end
 
 function uussd(rv)
-	local c = nixio.fs.access("/etc/config/atsocat.user") and
-		io.popen("cat /etc/config/atsocat.user")
+	local c = nixio.fs.access("/etc/config/atcommands.user") and
+		io.popen("cat /etc/config/atcommands.user")
 
 	if c then
 		for l in c:lines() do

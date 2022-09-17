@@ -1,3 +1,8 @@
+Set to unlock mode > AT!ENTERCND="A710";AT!ENTERCND="A710"
+Set QMI mode > AT!UDPID=68A2;AT!UDPID=68A2
+Set MBIM mode > AT!UDPID=68A3;AT!UDPID=68A3
+Reset modem > AT!RESET;AT!RESET
+Get modem info > ATI;ATI
 Check signal strength > AT+CSQ;AT+CSQ
 Get the temperature of MT > AT+QTEMP;AT+QTEMP
 Current band in use > AT+QNWINFO;AT+QNWINFO
