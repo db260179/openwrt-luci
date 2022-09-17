@@ -1,8 +1,20 @@
+All AT command parm > AT&V;AT&V
 Set to unlock mode > AT!ENTERCND="A710";AT!ENTERCND="A710"
 Set QMI mode > AT!UDPID=68A2;AT!UDPID=68A2
 Set MBIM mode > AT!UDPID=68A3;AT!UDPID=68A3
 Reset modem > AT!RESET;AT!RESET
 Get modem info > ATI;ATI
+Return current profile id > AT!SCDFTPROF?;AT!SCDFTPROF?
+Return LTE profile id > AT!SCLTEPROF?;AT!SCLTEPROF?
+Report current Band selection > AT!BAND=?;AT!BAND=?
+Get active Band > AT!GETBAND?;AT!GETBAND?
+Return radio access tech > AT!SELRAT?;AT!SELRAT?
+Report operational status > AT!GSTATUS?;AT!GSTATUS?
+Return SIM status > AT!SIMNOTINSTALLED?;AT!SIMNOTINSTALLED?
+Return active USB descriptor > AT!UDINFO?;AT!UDINFO?
+Report USB configuration > AT!UDUSBCOMP?;AT!UDUSBCOMP?
+Get current temperature > AT!PCTEMP?;AT!PCTEMP?
+Return current power voltage > AT!PCVOLT?;AT!PCVOLT?
 Check signal strength > AT+CSQ;AT+CSQ
 Get the temperature of MT > AT+QTEMP;AT+QTEMP
 Current band in use > AT+QNWINFO;AT+QNWINFO
