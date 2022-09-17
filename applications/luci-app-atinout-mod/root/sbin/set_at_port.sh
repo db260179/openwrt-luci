@@ -16,6 +16,6 @@ done
 rm -rf /tmp/testusb
 
 if [ $work != false ]; then
-uci set socat.http.atcport=$work
-uci commit socat
+uci set atinout.@atinout[0].atcport=$work
+uci commit atinout
 fi
