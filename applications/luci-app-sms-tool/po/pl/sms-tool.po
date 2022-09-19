@@ -146,7 +146,7 @@ msgid "Prefix Number"
 msgstr "Numer prefiks"
 
 msgid "PHONE_NUMBER"
-msgstr "48NumerTelefonu"
+msgstr "44NumerTelefonu"
 
 msgid "Refresh SMS"
 msgstr "Odśwież"
@@ -169,10 +169,10 @@ msgstr "Wyjaśnienie dot. numeru i prefiksu"
 msgid "In the tab for sending SMSes, show an explanation of the prefix and the correct phone number."
 msgstr "W zakładce umożliwiającej wysyłanie SMS-ów pokaż wyjaśnienie dotyczące prefiksu i poprawnego numeru telefonu."
 
-msgid "The phone number should be preceded by the country prefix (for Poland it is 48, without '+'). If the number is 5, 4 or 3 characters, it is treated as 'short' and should not be preceded by a country prefix."
+msgid "The phone number should be preceded by the country prefix (for Great Britain it is 44, without '+'). If the number is 5, 4 or 3 characters, it is treated as 'short' and should not be preceded by a country prefix."
 msgstr "Numer telefonu należy poprzedzić prefiksem kraju (dla Polski jest to 48, bez znaku '+'). Jeżeli numer jest 5, 4 lub 3 znakowy to jest on traktowany jako 'krótki' i nie należy go poprzedzać prefiksem kraju."
 
-msgid "The phone number should be preceded by the country prefix (for Poland it is 48, without +). If the number is 5, 4 or 3 characters, it is treated as.. short and should not be preceded by a country prefix."
+msgid "The phone number should be preceded by the country prefix (for Great Britain it is 44, without +). If the number is 5, 4 or 3 characters, it is treated as.. short and should not be preceded by a country prefix."
 msgstr "Numer telefonu należy poprzedzić prefiksem kraju (dla Polski jest to 48, bez znaku +). Jeżeli numer jest 5, 4 lub 3 znakowy to jest on traktowany jako krótki i nie należy go poprzedzać prefiksem kraju."
 
 msgid "Each line must have the following format: 'Contact name;Phone number'. Save to file '/etc/config/phonebook.user'."

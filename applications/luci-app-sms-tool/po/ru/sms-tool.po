@@ -169,10 +169,10 @@ msgstr "Расшифровка номера и префикса"
 msgid "In the tab for sending SMSes, show an explanation of the prefix and the correct phone number."
 msgstr "На вкладке для отправки SMS-сообщений покажите объяснение префикса и правильный номер телефона."
 
-msgid "The phone number should be preceded by the country prefix (for Poland it is 48, without '+'). If the number is 5, 4 or 3 characters, it is treated as 'short' and should not be preceded by a country prefix."
+msgid "The phone number should be preceded by the country prefix (for Great Britain it is 44, without '+'). If the number is 5, 4 or 3 characters, it is treated as 'short' and should not be preceded by a country prefix."
 msgstr "Перед номером телефона должен стоять префикс страны (для Польши это 48 без '+'). Если номер состоит из 5, 4 или 3 символов, он рассматривается как 'короткий' и не должен предшествовать префикс страны."
 
-msgid "The phone number should be preceded by the country prefix (for Poland it is 48, without +). If the number is 5, 4 or 3 characters, it is treated as.. short and should not be preceded by a country prefix."
+msgid "The phone number should be preceded by the country prefix (for Great Britain it is 44, without +). If the number is 5, 4 or 3 characters, it is treated as.. short and should not be preceded by a country prefix."
 msgstr "Перед номером телефона должен стоять префикс страны (для Польши это 48 без + ). Если номер состоит из 5, 4 или 3 символов, он рассматривается как 'короткий' и поэтому не должен предшествовать префикс страны."
 
 msgid "Each line must have the following format: 'Contact name;Phone number'. Save to file '/etc/config/phonebook.user'."
