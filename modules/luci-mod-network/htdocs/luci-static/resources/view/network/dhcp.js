@@ -427,6 +427,17 @@ return view.extend({
 			_('Query all available upstream resolvers.'));
 		o.optional = true;
 
+		o = s.taboption('advanced', form.Flag, 'add_mac',
+			_('Add MAC address'),
+			_('Add the MAC address of the requestor to DNS queries which are forwarded upstream.'));
+		o.optional = true;
+
+		o = s.taboption('advanced', form.DynamicList, 'add_subnet',
+			_('Subnet addresses forwarded upstream'),
+			_('Add a subnet address to the DNS queries which are forwarded upstream.'));
+		o.optional = true;
+		o.placeholder = '192.168.0.0/24';
+
 		o = s.taboption('advanced', form.DynamicList, 'bogusnxdomain',
 			_('IPs to override with NXDOMAIN'),
 			_('List of IP addresses to convert into NXDOMAIN responses.'));
