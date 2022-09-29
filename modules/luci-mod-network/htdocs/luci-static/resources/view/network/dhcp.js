@@ -432,11 +432,11 @@ return view.extend({
 			_('Add the MAC address of the requestor to DNS queries which are forwarded upstream.'));
 		o.optional = true;
 
-		o = s.taboption('advanced', form.DynamicList, 'add_subnet',
+		o = s.taboption('advanced', form.Value, 'add_subnet',
 			_('Subnet addresses forwarded upstream'),
 			_('Add a subnet address to the DNS queries which are forwarded upstream.'));
 		o.optional = true;
-		o.placeholder = '192.168.0.0/24';
+		o.placeholder = '192.168.0.0/24,192.168.1.0/24';
 
 		o = s.taboption('advanced', form.DynamicList, 'bogusnxdomain',
 			_('IPs to override with NXDOMAIN'),
