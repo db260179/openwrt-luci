@@ -659,15 +659,15 @@ return view.extend({
 		o.optional = true;
 		o.placeholder = '64.94.110.11';
 
-		o = s.taboption('general', form.Flag, 'add_mac',
+		o = s.taboption('general', form.Flag, 'addmac',
 		_('Add MAC address'),
 		_('Add the MAC address of the requestor to DNS queries which are forwarded upstream.'));
 		o.optional = true;
 
-		o = s.taboption('general', form.Value, 'add_subnet',
+		o = s.taboption('general', form.Value, 'addsubnet',
 			_('Subnet addresses forwarded upstream'),
 			_('Add a subnet address to the DNS queries which are forwarded upstream.'));
-		o.depends('add_mac', '1');
+		o.depends('addmac', '1');
 		o.optional = true;
 		o.placeholder = '32,128';
 
