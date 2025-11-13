@@ -1,0 +1,17 @@
+#
+# Copyright 2020-2022 Rafał Wabik - IceG - From eko.one.pl forum
+# Licensed to the GNU General Public License v3.0.
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=luci-app-sms-tool
+LUCI_TITLE:=LuCI Support for sms_tool
+LUCI_PKGARCH:=all
+LUCI_DEPENDS:=+sms-tool +kmod-usb-serial +kmod-usb-serial-option +luci-compat
+PKG_VERSION:=1.9.8-20230921
+
+PKG_LICENSE:=GPLv3
+
+include ../../luci.mk
+
+# call BuildPackage - OpenWrt buildroot signature
