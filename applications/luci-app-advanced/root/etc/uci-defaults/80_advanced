@@ -2,25 +2,37 @@
 
 CONFIG_FILE="/etc/config/advanced"
 
+# Initialize the file if it doesn't exist
 if [ ! -f "$CONFIG_FILE" ]; then
-
     touch "$CONFIG_FILE"
-    
-    uci add advanced defaults
-
-    uci commit advanced
 fi
 
-if ! uci show advanced.@edcca[0] >/dev/null 2>&1; then
-
-    uci add advanced edcca
-    uci commit advanced
+# Ensure the 'defaults' section exists (this is what your LuCI script looks for)
+if ! uci get advanced.defaults >/dev/null 2>&1; then
+    uci set advanced.defaults=defaults
 fi
 
-if ! uci show advanced.@advanced_packet_steering[0] >/dev/null 2>&1; then
-    
-    uci add advanced advanced_packet_steering
-    uci commit advanced
+# Set the WED and ATF defaults inside the 'defaults' section
+# These match the 'o' options in your Javascript
+[ -z "$(uci -q get advanced.defaults.wed_enable)" ] && uci set advanced.defaults.wed_enable='0'
+[ -z "$(uci -q get advanced.defaults.atf_enable)" ] && uci set advanced.defaults.atf_enable='0'
+[ -z "$(uci -q get advanced.defaults.hw_atf_enable)" ] && uci set advanced.defaults.hw_atf_enable='0'
+
+# Initialize EDCCA as a named section (optional, if you have a separate EDCCA tab)
+if ! uci get advanced.edcca >/dev/null 2>&1; then
+    uci set advanced.edcca=edcca
+    uci set advanced.edcca.edcca_enable='1'
+    uci set advanced.edcca.compensation='-6'
+    uci set advanced.edcca.thres_0='-60'
+    uci set advanced.edcca.thres_1='-62'
+    uci set advanced.edcca.thres_2='-59'
+    uci set advanced.edcca.thres_3='-56'
 fi
 
-return 0
+# Packet Steering section
+if ! uci get advanced.packet_steering >/dev/null 2>&1; then
+    uci set advanced.packet_steering=advanced_packet_steering
+fi
+
+uci commit advanced
+exit 0

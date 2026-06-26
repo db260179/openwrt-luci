@@ -4,87 +4,78 @@
 'require fs';
 'require form';
 
-// Project code format is tabs, not spaces
 return view.extend({
 	render: function() {
 		let m, s, o;
 
-		m = new form.Map('advanced');
+		m = new form.Map('advanced', _('EDCCA Configuration'));
 
 		s = m.section(form.TypedSection, 'edcca', _('EDCCA setting'),
-			_('EDCCA is a mechanism that allows Wi-Fi devices to detect whether the channel is free before transmitting. This works by measuring the energy level in the channel: If the detected signal is below a certain threshold, the device transmits. If the signal is above the threshold, the device waits to avoid collisions'));
+			_('EDCCA (Energy Detection Clear Channel Assessment) allows devices to detect channel interference. If the detected signal is below the threshold, the device transmits.'));
 		s.anonymous = true;
 		s.addremove = false;
+
+		// Enable Toggle
 		o = s.option(form.ListValue, "edcca_enable", _("Enable EDCCA Compensation"));
 		o.value('0', _("Disabled"));
 		o.value('1', _("On - Auto"));
-		o.cfgvalue = function(section_id) {
-		return uci.get('advanced', section_id, 'edcca_enable') || '1';
-		};
-		o.write = function(section_id, value) {
-			uci.set('advanced', section_id, 'edcca_enable', value);
-			fs.exec('/sbin/wifi', ['down']);
-			fs.exec('/sbin/wifi', ['up']);
-		};
-		
-		o = s.option(form.Value, "compensation", _("EDCCA Compensation"),_('Default: -6 - Range: -126 to 126'));
-		o.value('-2', _("-2"));
-		o.value('-6', _("-6"));
-		o.value('-10', _("-10"));
+		o.default = '1';
+
+		// Compensation
+		o = s.option(form.ListValue, "compensation", _("EDCCA Compensation"), _('Default: -6 | Range: -126 to 126'));
+		o.value('-2');
+		o.value('-6');
+		o.value('-10');
 		o.depends('edcca_enable', '1');
 		o.datatype = 'integer';
-		o.cfgvalue = function(section_id) {
-		return uci.get('advanced', section_id, 'compensation') || '-6';
-		};
-		o.write = function(section_id, value) {
-			uci.set('advanced', section_id, 'compensation', value);
-			fs.exec('/sbin/wifi', ['down']);
-			fs.exec('/sbin/wifi', ['up']);
-		};
-			
-		o = s.option(form.Value, "thres_0", _("EDCCA BW20"),_('Default: -60: dbm - Range: -126 to 0'));
-		o.value('-55', _("-55"));
-		o.value('-60', _("-60"));
-		o.value('-65', _("-65"));
+		o.default = '-6';
+
+		// BW20
+		o = s.option(form.Value, "thres_0", _("EDCCA BW20"), _('Default: -60 dBm'));
+		o.value('-55');
+		o.value('-60');
+		o.value('-65');
 		o.depends('edcca_enable', '1');
 		o.datatype = 'integer';
-		o.cfgvalue = function(section_id) {
-		return uci.get('advanced', section_id, 'thres_0') || '-60';
-		};
-		o.write = function(section_id, value) {
-			uci.set('advanced', section_id, 'thres_0', value);
-			fs.exec('/sbin/wifi', ['down']);
-			fs.exec('/sbin/wifi', ['up']);
-		};
-			
-		o = s.option(form.Value, "thres_1", _("EDCCA BW40"),_('Default: -62: dbm - Range: -126 to 0'));
-		o.value('-57', _("-57"));
-		o.value('-62', _("-62"));
-		o.value('-67', _("-67"));
+		o.default = '-60';
+
+		// BW40
+		o = s.option(form.Value, "thres_1", _("EDCCA BW40"), _('Default: -62 dBm'));
+		o.value('-57');
+		o.value('-62');
+		o.value('-67');
 		o.depends('edcca_enable', '1');
 		o.datatype = 'integer';
-		o.cfgvalue = function(section_id) {
-		return uci.get('advanced', section_id, 'thres_1') || '-62';
-		};
-		o.write = function(section_id, value) {
-			uci.set('advanced', section_id, 'thres_1', value);
-			fs.exec('/sbin/wifi', ['down']);
-			fs.exec('/sbin/wifi', ['up']);
-		};
-			
-		o = s.option(form.Value, "thres_2", _("EDCCA BW80"),_('Default: -59: dbm - Range: -126 to 0'));
-		o.value('-54', _("-54"));
-		o.value('-59', _("-59"));
-		o.value('-64', _("-64"));
+		o.default = '-62';
+
+		// BW80
+		o = s.option(form.Value, "thres_2", _("EDCCA BW80"), _('Default: -59 dBm'));
+		o.value('-54');
+		o.value('-59');
+		o.value('-64');
 		o.depends('edcca_enable', '1');
 		o.datatype = 'integer';
-		o.cfgvalue = function(section_id) {
-		return uci.get('advanced', section_id, 'thres_2') || '-59';
-		};
-		o.write = function(section_id, value) {
-			uci.set('advanced', section_id, 'thres_2', value);
-			fs.exec('/sbin/wifi', ['down']);
-			fs.exec('/sbin/wifi', ['up']);
+		o.default = '-59';
+
+		// BW160
+		o = s.option(form.Value, "thres_3", _("EDCCA BW160"), _('Default: -56 dBm'));
+		o.value('-51');
+		o.value('-56');
+		o.value('-61');
+		o.depends('edcca_enable', '1');
+		o.datatype = 'integer';
+		o.default = '-56';
+
+		/**
+		 * Better way to handle WiFi Restart:
+		 * Instead of restarting on every option write, we hook into the Map's 
+		 * save/apply process so it only happens once.
+		 */
+		m.apply = function() {
+			return this.super('apply').then(function() {
+				return fs.exec('/sbin/wifi', ['reload']); 
+				// 'reload' is generally safer/faster than down/up
+			});
 		};
 
 		return m.render();
