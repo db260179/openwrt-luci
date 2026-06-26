@@ -1161,6 +1161,30 @@ return view.extend({
 					}, this));
 				};
 
+				// VLAN ID option for bridge VLAN filtering
+				o = ss.taboption('general', form.Value, 'vid', _('VLAN ID'),
+					_('VLAN ID for bridge VLAN filtering. Set this to match your network VLAN configuration. Common values: 7 (guest), 70 (IoT), 73 (corporate), 74 (lab).'));
+				o.datatype = 'range(1,4094)';
+				o.optional = true;
+				o.rmempty = true;
+				o.placeholder = _('auto');
+				o.depends('mode', 'ap');
+				o.depends('mode', 'ap-wds');
+				o.depends('mode', 'sta');
+				o.depends('mode', 'sta-wds');
+
+				// Add validation to ensure VID matches network configuration
+				o.validate = function(section_id, value) {
+					if (value === '' || value === null)
+						return true;
+
+					const vid = parseInt(value);
+					if (isNaN(vid) || vid < 1 || vid > 4094)
+						return _('VLAN ID must be between 1 and 4094');
+
+					return true;
+				};
+
 				let encr;
 				if (hwtype == 'mac80211') {
 					const mode = ss.children.find(obj => obj.option === 'mode');
