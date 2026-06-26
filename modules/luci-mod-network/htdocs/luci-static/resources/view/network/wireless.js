@@ -334,7 +334,7 @@ var CBIWifiFrequencyValue = form.Value.extend({
 						available: available,
 						no_outdoor: freq.no_outdoor
 					}
-					
+
 				);
 			});
 
@@ -486,7 +486,7 @@ var CBIWifiFrequencyValue = form.Value.extend({
 
 		// Determine mode based on htmode value
 		if (/EHT20|EHT40|EHT80|EHT160|EHT320/.test(htval))
-			mode.value = 'be';		
+			mode.value = 'be';
 		else if (/HE20|HE40|HE80|HE160/.test(htval))
 			mode.value = 'ax';
 		else if (/VHT20|VHT40|VHT80|VHT160/.test(htval))
@@ -590,7 +590,7 @@ var CBIWifiFrequencyValue = form.Value.extend({
 		uci.set('wireless', section_id, 'htmode', value[0] || null);
 
 		this.useBandOption ?
-			uci.set('wireless', section_id, 'band', value[1]) : 
+			uci.set('wireless', section_id, 'band', value[1]) :
 			uci.set('wireless', section_id, 'hwmode', (value[1] == '2g') ? '11g' : '11a');
 
 		uci.set('wireless', section_id, 'channel', value[2]);
@@ -1257,6 +1257,11 @@ return view.extend({
 
 					o = ss.taboption('advanced', form.Flag , 'skip_inactivity_poll', _('Disable Inactivity Polling'));
 					o.optional    = true;
+					o.datatype    = 'uinteger';
+
+					o = ss.taboption('advanced', form.Value, 'maxassoc', _('Maximum Wifi Clients allowed to Connect'), _('Number of Max Wifi Clients per interface'));
+					o.optional    = true;
+					o.placeholder = 20;
 					o.datatype    = 'uinteger';
 
 					o = ss.taboption('advanced', form.Value, 'max_inactivity', _('Station inactivity limit'), _('802.11v: BSS Max Idle. Units: seconds.'));
