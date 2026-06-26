@@ -1013,6 +1013,15 @@ return view.extend({
 				o.depends({'_freq': 'auto', '!contains': true});
 				o.depends('background_radar', '1');
 
+				o = ss.taboption('advanced', form.ListValue, 'log_level', _('Log level'), _('Set the daemon log level.'));
+				o.value('0', _('0 - Verbose Debugging'));
+				o.value('1', _('1 - Debugging'));
+				o.value('2', _('2 - Informational Messages'));
+				o.value('3', _('3 - Notification'));
+				o.value('4', _('4 - Warning'));
+				o.default = '2';
+				o.rmempty = true;
+
 				if (hwtype == 'mac80211') {
 
 					o = ss.taboption('general', form.Flag, 'vendor_vht', _('Allow VHT on 2g'), _('Enables QAM-256 in 2.4GHz 802.11n, in HE mode enables VHT fallback'));
