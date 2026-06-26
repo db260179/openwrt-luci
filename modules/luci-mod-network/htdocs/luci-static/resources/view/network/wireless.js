@@ -1252,7 +1252,7 @@ return view.extend({
 
 					o = ss.taboption('advanced', form.Value, 'wpa_group_rekey', _('Time interval for rekeying GTK'), _('sec'));
 					o.optional    = true;
-					o.placeholder = 600;
+					o.placeholder = 14400;
 					o.datatype    = 'uinteger';
 
 					o = ss.taboption('advanced', form.Flag , 'skip_inactivity_poll', _('Disable Inactivity Polling'));
@@ -1266,7 +1266,7 @@ return view.extend({
 
 					o = ss.taboption('advanced', form.Value, 'max_inactivity', _('Station inactivity limit'), _('802.11v: BSS Max Idle. Units: seconds.'));
 					o.optional    = true;
-					o.placeholder = 300;
+					o.placeholder = 1200;
 					o.datatype    = 'uinteger';
 
 					o = ss.taboption('advanced', form.Value, 'max_listen_interval', _('Maximum allowed Listen Interval'));
@@ -1524,7 +1524,7 @@ return view.extend({
 						for (const b of bytes) {
 							// printable = 0x20–0x3A and 0x3C–0x7E, but semicolon (0x3B) excluded
 							// anything *within* this range %encoded should be treated as printable literal(?)
-							// There seems to be a glaring bug in this WiFi spec. Ofc there are bugs. 
+							// There seems to be a glaring bug in this WiFi spec. Ofc there are bugs.
 							// By not encoding the "%" character, a string literal % with two successive
 							// digits is ambiguous. If the password contains "%20" which
 							// should be interpreted literally ['%', '2', '0'] and not " ", some
