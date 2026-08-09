@@ -1,0 +1,51 @@
+{
+  "admin/network/advanced": {
+    "title": "Advanced",
+    "order": 60,
+    "action": {
+      "type": "firstchild"
+    },
+    "depends": {
+      "acl": [ "luci-app-advanced" ],
+      "fs": {
+        "/etc/init.d/advanced_setup": "executable"
+      }
+    }
+  },
+
+  "admin/network/advanced/wed": {
+    "title": "WED",
+    "order": 1,
+    "action": {
+      "type": "view",
+      "path": "advanced/wed"
+    }
+  },
+
+  "admin/network/advanced/airtime": {
+    "title": "Airtime Fairness (ATF)",
+    "order": 2,
+    "action": {
+      "type": "view",
+      "path": "advanced/airtime"
+    }
+  },
+
+  "admin/network/advanced/edcca": {
+    "title": "EDCCA",
+    "order": 3,
+    "action": {
+      "type": "view",
+      "path": "advanced/edcca"
+    }
+  },
+
+  "admin/network/advanced/packet_steering": {
+    "title": "Packet Steering",
+    "order": 4,
+    "action": {
+      "type": "view",
+      "path": "advanced/packet_steering"
+    }
+  }
+}

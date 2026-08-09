@@ -18,7 +18,7 @@ return view.extend({
 	load() {
 		return Promise.all([
 			this.callConntrackHelpers(),
-			firewall.getDefaults()
+			firewall.getDefaults(),
 		]);
 	},
 
@@ -29,7 +29,7 @@ return view.extend({
 			return this.renderZones(data);
 	},
 
-	renderZones([ctHelpers, fwDefaults]) {
+	renderZones([ctHelpers, fwDefaults, wed_state]) {
 		let m, s, o, out;
 		const fw4 = L.hasSystemFeature('firewall4');
 
