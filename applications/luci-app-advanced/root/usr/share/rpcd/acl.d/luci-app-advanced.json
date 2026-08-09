@@ -1,27 +1,30 @@
 {
   "luci-app-advanced": {
-    "description": "Grant UCI and Filesystem access to LuCI app advanced",
-    "read": {
-      "file": {
-        "/sbin/logread -e wifi": [ "exec" ],
-        "/sbin/wifi": [ "exec" ],
-        "/usr/sbin/logread -e wifi": [ "exec" ],
-        "/etc/modules.d/mt7915e": [ "read" ]
-      },
-      "ubus": {
-        "file": [ "read" ]
-      },
-      "uci": [ "advanced", "mtkhnat" ]
-    },
-    "write": {
-      "file": {
-        "/sbin/mtkhnat": [ "exec" ],
-        "/etc/modules.d/mt7915e": [ "write" ]
-      },
-      "ubus": {
-        "file": [ "write" ]
-      },
-      "uci": [ "advanced", "mtkhnat" ]
-    }
+    "description": "Grant UCI and RPC access to LuCI app advanced",
+		"read": {
+			"file": {
+				"/etc/init.d/advanced_setup runtime_atf": [ "exec" ],
+				"/sbin/logread -e wifi": [ "exec" ],
+				"/sbin/wifi": [ "exec" ],
+				"/usr/sbin/logread -e wifi": [	"exec" ],
+				"/sys/kernel/debug/cake_mq/sync_time_ns": [ "read" ]
+			},
+			"ubus": {
+				"file": [ "read" ],
+				"luci": [ "getConntrackHelpers", "getWED" ]
+			},
+			"uci": [ "advanced", "mtkhnat" ]
+		},
+		"write": {
+			"file": {
+				"/etc/init.d/advanced_setup *": [ "exec" ],
+				"/sbin/mtkhnat": [ "exec" ]
+			},
+			"ubus": {
+				"file": [ "write", "exec" ],
+				"system": [ "reboot" ]
+			},
+			"uci": [ "advanced", "mtkhnat" ]
+		}
   }
 }
