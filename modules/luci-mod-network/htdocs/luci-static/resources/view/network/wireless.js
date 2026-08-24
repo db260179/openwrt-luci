@@ -1071,6 +1071,74 @@ return view.extend({
 					o = ss.taboption('advanced', form.Flag, 'ldpc', _('Tx LDPC'));
 					o.depends({'rxldpc': '1'});
 					o.default = '1';
+
+					o = ss.taboption('advanced', form.Flag, 'he_su_beamformer', _('HE SU Beamformer'),
+						_('Lets this AP shape its downlink transmission toward a single client, using ' +
+						'channel sounding feedback from that client to improve its RSSI and PHY ' +
+						'rate. This is what people usually mean by "beamforming." Only takes ' +
+						'effect if the radio\'s HE PHY capabilities actually advertise SU ' +
+						'beamformer support - this toggle can\'t enable it on hardware that ' +
+						'doesn\'t have it.'));
+					o.default = o.enabled;
+
+					o = ss.taboption('advanced', form.Flag, 'he_su_beamformee', _('HE SU Beamformee'),
+						_('Lets this AP be steered by a client that is beamforming toward it, and ' +
+						'respond to sounding/feedback requests in that role. Several client ' +
+						'drivers expect this bit set before they\'ll complete a full sounding ' +
+						'handshake at all, so leaving it off can quietly break beamformer ' +
+						'operation even when SU Beamformer above is enabled. Enabled by default ' +
+						'upstream as of 590eaae.'));
+					o.default = o.enabled;
+
+					o = ss.taboption('advanced', form.Flag, 'he_mu_beamformer', _('HE MU Beamformer'),
+						_('Lets this AP beamform to multiple clients in the same transmission ' +
+						'using MU-MIMO, rather than one at a time. Needs real multi-stream ' +
+						'capable hardware and more frequent sounding overhead than SU alone; ' +
+						'benefit varies a lot by driver and client mix, and it\'s worth testing ' +
+						'with it off if you see inconsistent throughput in a mixed-client ' +
+						'environment.'));
+					o.default = o.enabled;
+
+					o = ss.taboption('advanced', form.Flag, 'he_bss_color_enabled', _('HE BSS Color / Spatial Reuse'),
+						_('Master switch for whether this BSS advertises BSS Color and Spatial ' +
+						'Reuse (SR) at all. When off, mac80211.sh sends he_bss_color_disabled=1 ' +
+						'to hostapd - SR is fully off, not just defaulted - and the options ' +
+						'below are irrelevant. When on, the AP tags its frames with a BSS ' +
+						'Color so nearby stations can tell it apart from a same-channel ' +
+						'neighboring BSS, and (depending on the sub-options below) those ' +
+						'stations may transmit concurrently with a detected neighbor instead ' +
+						'of deferring to it. This mainly helps in dense deployments with ' +
+						'overlapping APs on the same channel (apartments, offices); on an ' +
+						'isolated home AP with no same-channel neighbors it has essentially ' +
+						'nothing to do and is safe to leave on.'));
+					o.default = o.enabled;
+
+					o = ss.taboption('advanced', form.Flag, 'he_spr_psr_enabled', _('HE Spatial Reuse: PSR'),
+						_('Controls the "PSR Disallowed" bit of the Spatial Reuse Parameter Set. ' +
+						'PSR (Parameterized Spatial Reuse) lets this AP explicitly signal, via ' +
+						'the SR field in HE frames, how much extra co-channel interference a ' +
+						'nearby overlapping-BSS station may tolerate before it has to defer - ' +
+						'as opposed to the plain OBSS PD mechanism above, where a neighboring ' +
+						'station decides for itself purely from the signal strength it ' +
+						'measures. Off by default upstream, matching mac80211.sh; enabling it ' +
+						'permits PSR-based transmission decisions in addition to whatever ' +
+						'OBSS PD offset is configured.'));
+					o.default = o.disabled;
+
+					o = ss.taboption('advanced', form.Value, 'he_bss_color', _('HE BSS Color'),
+						_('A 6-bit identifier (1-63) included in HE frames so nearby stations can ' +
+						'tell your BSS apart from an overlapping BSS (OBSS) without decoding the ' +
+						'full MAC header. This underpins 802.11ax spatial reuse: a station that ' +
+						'sees a different color on a signal below the OBSS PD threshold may ' +
+						'transmit simultaneously instead of deferring. Leave unset to let ' +
+						'hostapd pick a random color at each start; pick a fixed value only if ' +
+						'you need it to stay stable, e.g. for troubleshooting or a dense multi-AP ' +
+						'deployment where you want to guarantee no collision with a known ' +
+						'neighboring BSS.'));
+					o.datatype = 'range(1,63)';
+					o.depends({'he_bss_color_enabled': '1'});
+					o.optional = true;
+					o.placeholder = _('random');
 				}
 
 
