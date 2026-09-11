@@ -1372,7 +1372,7 @@ return view.extend({
 
 					o = ss.taboption('advanced', form.Value, 'wpa_group_rekey', _('Time interval for rekeying GTK'), _('sec'));
 					o.optional    = true;
-					o.placeholder = 14400;
+					o.placeholder = 3600;
 					o.datatype    = 'uinteger';
 
 					o = ss.taboption('advanced', form.Flag , 'skip_inactivity_poll', _('Disable Inactivity Polling'));
@@ -1386,7 +1386,7 @@ return view.extend({
 
 					o = ss.taboption('advanced', form.Value, 'max_inactivity', _('Station inactivity limit'), _('802.11v: BSS Max Idle. Units: seconds.'));
 					o.optional    = true;
-					o.placeholder = 1200;
+					o.placeholder = 7200;
 					o.datatype    = 'uinteger';
 
 					o = ss.taboption('advanced', form.Value, 'max_listen_interval', _('Maximum allowed Listen Interval'));
