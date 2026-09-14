@@ -1,0 +1,10 @@
+{
+    "luci-mod-status-temp": {
+        "description": "Allow LuCI to read SoC temperature file",
+        "read": {
+            "file": {
+                "/tmp/soc_temp": [ "read" ]
+            }
+        }
+    }
+}
