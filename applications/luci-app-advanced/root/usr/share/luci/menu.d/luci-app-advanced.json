@@ -1,5 +1,5 @@
 {
-  "admin/advanced/": {
+  "admin/network/advanced": {
     "title": "Advanced",
     "order": 60,
     "action": {
@@ -7,13 +7,13 @@
     },
     "depends": {
       "acl": [ "luci-app-advanced" ],
-	  "fs": {
-				"/etc/init.d/advanced_setup": "executable"
-			},
+      "fs": {
+        "/etc/init.d/advanced_setup": "executable"
+      }
     }
   },
 
-  "admin/advanced/wed": {
+  "admin/network/advanced/wed": {
     "title": "WED",
     "order": 1,
     "action": {
@@ -22,7 +22,7 @@
     }
   },
   
-    "admin/advanced/edcca": {
+  "admin/network/advanced/edcca": {
     "title": "EDCCA",
     "order": 2,
     "action": {
@@ -31,35 +31,12 @@
     }
   },
   
-   "admin/advanced/packet_steering": {
+  "admin/network/advanced/packet_steering": {
     "title": "Packet Steering",
     "order": 3,
     "action": {
       "type": "view",
       "path": "advanced/packet_steering"
-    }
-  },
-  
-  "admin/advanced/hqos": {
-    "title": "HQoS",
-    "order": 4,
-    "action": {
-      "type": "view",
-      "path": "advanced/hqos"
-    },
-	"depends": {
-	  "fs": {
-				"/sbin/mtkhnat": "executable"
-			},
-    }
-  },
-
-  "admin/advanced/usb": {
-    "title": "USB",
-    "order": 5,
-    "action": {
-      "type": "view",
-      "path": "advanced/usb"
     }
   }
 }
