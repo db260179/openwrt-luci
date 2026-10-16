@@ -1,27 +1,27 @@
 {
   "luci-app-advanced": {
-    "description": "Grant UCI and RPC access to LuCI app advanced",
-	"read": {
-			"file": {
-				"/sbin/logread -e wifi": [ "exec" ],
-				"/sbin/wifi": [ "exec" ],
-				"/usr/sbin/logread -e wifi": [	"exec" ]
-			},
-			"ubus": {
-				"file": [ "read" ],
-				"luci": [ "getConntrackHelpers", "getWED" ]
-			},
-			"uci": [ "advanced", "mtkhnat" ]
-		},
-		"write": {
-			"file": {
-				"/sbin/mtkhnat": [ "exec" ]
-			},
-			"ubus": {
-				"file": [ "write" ],
-				"luci": [ "setWED" ]
-			},
-			"uci": [ "advanced", "mtkhnat" ]
-		}
+    "description": "Grant UCI and Filesystem access to LuCI app advanced",
+    "read": {
+      "file": {
+        "/sbin/logread -e wifi": [ "exec" ],
+        "/sbin/wifi": [ "exec" ],
+        "/usr/sbin/logread -e wifi": [ "exec" ],
+        "/etc/modules.d/mt7915e": [ "read" ]
+      },
+      "ubus": {
+        "file": [ "read" ]
+      },
+      "uci": [ "advanced", "mtkhnat" ]
+    },
+    "write": {
+      "file": {
+        "/sbin/mtkhnat": [ "exec" ],
+        "/etc/modules.d/mt7915e": [ "write" ]
+      },
+      "ubus": {
+        "file": [ "write" ]
+      },
+      "uci": [ "advanced", "mtkhnat" ]
+    }
   }
 }
