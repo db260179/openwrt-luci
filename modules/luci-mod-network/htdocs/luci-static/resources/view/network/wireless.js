@@ -1069,6 +1069,29 @@ return view.extend({
 					o.value('2', _('High'));
 					o.value('3', _('Very High'));
 
+
+					o = ss.taboption('advanced', form.ListValue, 'edcca_enable', _('Enable EDCCA'), _('Energy Detect Clear Channel Assessment. Note: Hardware support required (e.g. MediaTek).'));
+					o.value('', _('Auto (Default)'));
+					o.value('0', _('Force Disable'));
+					o.value('1', _('Force Enable'));
+					o.rmempty = true;
+
+					o = ss.taboption('advanced', form.Value, 'edcca_threshold', _('EDCCA Thresholds'), _('Set EDCCA thresholds for 20MHz, 40MHz, 80MHz, 160MHz respectively (e.g. -70 -76 -79 -82).'));
+					o.value('-65 -67 -64 -59', _('Conservative (-65 -67 -64 -59)'));
+					o.value('-60 -62 -59 -54', _('Default / Stable (-60 -62 -59 -54)'));
+					o.value('-57 -59 -56 -52', _('Balanced (-57 -59 -56 -52)'));
+					o.value('-53 -55 -52 -49', _('Aggressive (-53 -55 -52 -49)'));
+					o.depends('edcca_enable', '1');
+					o.rmempty = true;
+
+					o = ss.taboption('advanced', form.Value, 'edcca_compensation', _('EDCCA Compensation'), _('Set EDCCA compensation value (e.g. -2).'));
+					o.value('-10', _('Conservative (-10)'));
+					o.value('-6', _('Default / Stable (-6)'));
+					o.value('-4', _('Balanced (-4)'));
+					o.value('-2', _('Aggressive (-2)'));
+					o.depends('edcca_enable', '1');
+					o.rmempty = true;
+
 					o = ss.taboption('advanced', form.Value, 'distance', _('Distance Optimization'), _('Distance to farthest network member in meters. Set only for distances above one kilometer; otherwise it is harmful.'));
 					o.datatype = 'or(range(0,114750),"auto")';
 					o.placeholder = 'auto';
