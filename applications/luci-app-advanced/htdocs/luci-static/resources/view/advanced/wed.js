@@ -2,107 +2,178 @@
 'require view';
 'require form';
 'require fs';
-'require rpc';
 'require uci';
 'require ui';
+'require rpc';
 
-// Project code format is tabs, not spaces
 return view.extend({
-	callConntrackHelpers: rpc.declare({
-		object: 'luci',
-		method: 'getConntrackHelpers',
-		expect: { result: [] }
+	callReboot: rpc.declare({
+		object: 'system',
+		method: 'reboot',
+		expect: { result: 0 }
 	}),
-	
-		
-	render: function() {
 
+	callSetWED: rpc.declare({
+		object: 'luci',
+		method: 'setWED',
+		params: [ 'enabled' ],
+		expect: { enabled: false }
+	}),
+
+	callGetWED: rpc.declare({
+		object: 'luci',
+		method: 'getWED',
+		expect: { enabled: false }
+	}),
+
+	render: function() {
 		let m, s, o;
 
-		m = new form.Map('advanced');
-		
-		/* mt7915 specific Wired Ethernet Dispatch (WED) */
-		
-		if (L.hasSystemFeature('wedoffload')) {
-			const callSetWED = rpc.declare({
-				object: 'luci',
-				method: 'setWED',
-				params: [ 'enabled' ],
-				expect: { enabled: false }
+		m = new form.Map('advanced', _('Advanced Wireless Settings'));
+
+		s = m.section(form.TypedSection, 'defaults', _('Kernel Module & Hardware Acceleration'));
+		s.anonymous = true;
+		s.addremove = false;
+
+		s.tab('wed_tab', _('WED (mt7915e)'));
+		s.tab('atf_tab', _('Airtime Fairness'));
+
+		/*
+		 * WED TAB
+		 */
+		o = s.taboption('wed_tab', form.ListValue, "wed_enable", _("WED Mode"),
+			_("Enabling this modifies /etc/modules.d/mt7915e and requires a reboot."));
+		o.value('0', _("Disabled"));
+		o.value('1', _("Enabled"));
+		o.rmempty = false;
+
+		o.load = L.bind(function(section_id) {
+			return this.callGetWED().then(L.bind(function(enabled) {
+				let wedState = enabled ? '1' : '0';
+				let uciValue = uci.get('advanced', section_id, 'wed_enable');
+				
+				// Sync UCI with actual module state if different
+				if (uciValue != wedState) {
+					uci.set('advanced', section_id, 'wed_enable', wedState);
+				}
+				
+				return wedState;
+			}, this)).catch(function(e) {
+				console.error('Failed to get WED state:', e);
+				// Fallback to UCI value
+				return uci.get('advanced', section_id, 'wed_enable') || '0';
 			});
- 			const callGetWED = rpc.declare({
-				object: 'luci',
-				method: 'getWED',
-				params: [ 'enabled' ],
-				expect: { enabled: false }
+		}, this);
+
+		o.write = L.bind(function(section_id, value) {
+			let enabled = (value === '1');
+			
+			return this.callSetWED(enabled).then(L.bind(function(result) {
+				uci.set('advanced', section_id, 'wed_enable', value);
+				ui.addNotification(null, 
+					enabled ? _('WED enabled. Reboot required to take effect.') 
+						   : _('WED disabled. Reboot required to take effect.'), 
+					'info');
+				return value;
+			}, this)).catch(function(e) {
+				console.error('Failed to set WED:', e);
+				ui.addNotification(null, _('Error updating WED: ') + e.message, 'danger');
+				throw e;
 			});
-			s = m.section(form.TypedSection, 'defaults', _('WED Offloading'),
-				_('Wireless Ethernet Dispatch (WED). It is an extension of hardware flow offloading it can reduce CPU loads, increase routing throughput and ping of wireless devices. ***After saved and apply this change, a reboot of the device is necessary to take effect.***'));
-			s.anonymous = true;
-			s.addremove = false;
-			o = s.option(form.ListValue, "wed_enable", _("WED"));
+		}, this);
+
+		/*
+		 * ATF TAB
+		 */
+		// Basic ATF - Depends only on WED being enabled
+		o = s.taboption('atf_tab', form.ListValue, "atf_enable", _("Enable ATF"));
+		o.value('0', _("Off"));
+		o.value('1', _("On"));
+		o.depends('wed_enable', '1');
+		o.write = function(section_id, value) {
+			uci.set('advanced', section_id, 'atf_enable', value);
+			return fs.exec("/etc/init.d/advanced_setup", ["reload", "atf"])
+				.then(function() {
+					ui.addNotification(null, _('ATF configuration updated.'), 'info');
+				})
+				.catch(function(err) {
+					console.error(err);
+					ui.addNotification(null, _('Failed to reload ATF configuration.'), 'warning');
+				});
+		};
+
+		// HW ATF - Depends on WED enabled AND hardware feature 'vow'
+		if (L.hasSystemFeature('vow')) {
+			o = s.taboption('atf_tab', form.ListValue, "hw_atf_enable", _("Enable HW ATF"));
 			o.value('0', _("Off"));
 			o.value('1', _("On"));
-			o.optional = false;
-			o.load = async function(section_id) {
-				let ret = await callGetWED().then((enabled) => { return enabled });
-				if (!ret) return '0';
-				if (ret) return '1';
-			};
-			o.write = async function(section_id, value) {
-				if (value && (value == '1' || value == '0')) {
-					const ret = await callSetWED(value == '1' ? true : false).then((enabled) => {
-						return enabled;
+			o.depends('wed_enable', '1');
+			o.write = function(section_id, value) {
+				uci.set('advanced', section_id, 'hw_atf_enable', value);
+				return fs.exec("/etc/init.d/advanced_setup", ["reload", "atf"])
+					.then(function() {
+						ui.addNotification(null, _('HW ATF configuration updated.'), 'info');
+					})
+					.catch(function(err) {
+						console.error(err);
+						ui.addNotification(null, _('Failed to reload HW ATF configuration.'), 'warning');
 					});
-					if (!ret) {
-						uci.unset('advanced', section_id, 'wed_offloading');
-						return '0';
-						}
-					if (ret) {
-						uci.set('advanced', section_id, 'wed_offloading', '1');
-						return '1';
-						}
-				}
 			};
 		}
-		
-		/* mt7915 specific HW ATF */
-		
-		if (L.hasSystemFeature('vow')) {
-			
-			s = m.section(form.TypedSection, 'defaults', _('Hardware AirTimeFairness - Enable WED to set-up'),
-				_('The primary purpose of ATF is to optimize wireless network performance by ensuring that all connected devices receive a fair share of the available airtime on a Wi-Fi channel, regardless of their speed or capabilities. '));
-			s.anonymous = true;
-			s.addremove = false;
-			o = s.option(form.ListValue, "atf_enable", _("Enable ATF"));
-			o.value('0', _("Off"));
-			o.value('1', _("On"));
-			o.optional = false;
-			o.depends('wed_enable', '1');
-			o.default = uci.get('advanced', 'defaults', 'atf_enable');
-			o.write = function(section_id, value) {
-				uci.set('advanced', section_id, 'atf_enable',value);
-				fs.exec("/etc/init.d/advanced_setup", ["reload", "atf"])
-					  .then(() => console.log("advanced_setup reload atf done"))
-					  .catch(err => console.error(err));
-			};
-			
-			o = s.option(form.ListValue, "hw_atf_enable", _("Enable HW ATF"));
-			o.value('0', _("Off"));
-			o.value('1', _("On"));
-			o.optional = false;
-			o.depends('wed_enable', '1');
-			o.default = uci.get('advanced', 'defaults', 'hw_atf_enable');
-			o.write = function(section_id, value) {
-				uci.set('advanced', section_id, 'hw_atf_enable',value);
-				fs.exec("/etc/init.d/advanced_setup", ["reload", "atf"])
-					  .then(() => console.log("advanced_setup reload atf done"))
-					  .catch(err => console.error(err));
-			};
-						
-		}	
- 
-		return m.render();
-	},
-});
 
+		/*
+		* SYSTEM ACTIONS - Reboot with Script-Based Heartbeat
+		*/
+		s = m.section(form.TypedSection, 'defaults', _('System Actions'));
+		s.anonymous = true;
+
+		o = s.option(form.Button, '_reboot_btn', _('Apply & Reboot Device'));
+		o.inputstyle = 'negative';
+		o.inputtitle = _('Reboot Now');
+
+		o.onclick = L.bind(function(ev) {
+			if (!confirm(_('Reboot now? Changes will be applied and connections dropped.')))
+				return;
+
+			// Show the official modal
+			ui.showModal(_('Rebooting...'), [
+				E('p', { 'class': 'spinning' }, _('The system is rebooting. This page will reload automatically once the connection is restored.'))
+			]);
+
+			// Trigger the Reboot
+			this.callReboot().then(L.bind(function() {
+
+				let checkBack = function() {
+					// We use a <script> tag to check for the server.
+					// Browsers allow script loads across "untrusted" SSL boundaries
+					// much more easily than fetch() or XHR.
+					let script = document.createElement('script');
+
+					script.onload = function() {
+						// If the script loads (or even starts to load), the server is up
+						window.location.reload();
+					};
+
+					script.onerror = function() {
+						// Server still down or certificate not yet accepted by the browser
+						// We'll clean up and try again in 5 seconds
+						document.body.removeChild(script);
+						window.setTimeout(checkBack, 5000);
+					};
+
+					// luci.js is a CORE file. If it's missing, LuCI isn't installed.
+					script.src = window.location.protocol + '//' + window.location.hostname +
+								'/luci-static/resources/luci.js?r=' + Math.random();
+
+					document.body.appendChild(script);
+				};
+
+				// Wait 25 seconds before we start the first check
+				window.setTimeout(checkBack, 25000);
+
+			}, this));
+		}, this);
+
+		return m.render();
+	}
+});
