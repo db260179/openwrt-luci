@@ -1057,6 +1057,10 @@ return view.extend({
 					o = ss.taboption('general', form.Flag, 'background_radar', _('Enable hostapd background radar feature'), _('Enabling this allows DFS CAC to run on dedicated radio RF chains while the radio(s) are otherwise running normal AP activities on other channels.'));
 					o.depends({'_freq': '5g', '!contains': true});
 
+					o = ss.taboption('general', form.Flag, 'zero_wait_dfs', _('Enable Staged Zero-Wait DFS'), _('Enabling this brings up the AP immediately on a non-DFS fallback channel while the target DFS channel runs the background CAC on dedicated radio hardware. Once the CAC finishes, the AP will seamlessly switch to the target DFS channel.'));
+					o.depends({'_freq': '5g', '!contains': true});
+
+
 					o = ss.taboption('general', CBIWifiTxPowerValue, 'txpower', _('Maximum transmit power'), _('Specifies the maximum transmit power the wireless radio may use. Depending on regulatory requirements and wireless usage, the actual transmit power may be reduced by the driver.'));
 					o.wifiNetwork = radioNet;
 
