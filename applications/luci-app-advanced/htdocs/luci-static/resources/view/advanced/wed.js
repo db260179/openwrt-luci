@@ -2,104 +2,220 @@
 'require view';
 'require form';
 'require fs';
-'require uci';
-'require ui';
 'require rpc';
+'require ui';
+'require uci';
+
+const wedRuntimeStatusId = 'advanced-wed-runtime-status';
+const wedApplyStatusId = 'advanced-wed-apply-status';
+const wedRebootButtonId = 'advanced-wed-reboot-button';
+
+let currentWedConfigValue = '0';
+let currentWedFormValue = '0';
+let currentWedRuntimeEnabled = false;
+
+const callGetWED = rpc.declare({
+	object: 'luci',
+	method: 'getWED',
+	params: [ 'enabled' ],
+	expect: { enabled: false }
+});
+
+const callReboot = rpc.declare({
+	object: 'system',
+	method: 'reboot',
+	expect: { result: 0 }
+});
+
+function wedNeedsReboot(configValue, runtimeEnabled) {
+	return ((configValue === '1') !== (runtimeEnabled === true));
+}
+
+function formatWedRuntimeStatus(enabled) {
+	return 'getWED: enabled=%s (%s)'.format(
+		enabled ? 'true' : 'false',
+		enabled ? _('On') : _('Off'));
+}
+
+function setWedRuntimeStatus(text) {
+	const node = document.getElementById(wedRuntimeStatusId);
+
+	if (node)
+		node.textContent = text;
+}
+
+function formatWedApplyStatus(configValue, runtimeEnabled) {
+	if (currentWedFormValue !== currentWedConfigValue)
+		return _('Save & Apply is required');
+
+	return wedNeedsReboot(configValue, runtimeEnabled)
+		? _('Reboot is required')
+		: _('Applied');
+}
+
+function setWedApplyStatus() {
+	const node = document.getElementById(wedApplyStatusId);
+	const rebootAllowed = currentWedFormValue === currentWedConfigValue;
+
+	if (node)
+		node.textContent = formatWedApplyStatus(currentWedConfigValue, currentWedRuntimeEnabled);
+
+	const rebootButton = document.getElementById(wedRebootButtonId);
+
+	if (rebootButton)
+		rebootButton.style.display = rebootAllowed &&
+			wedNeedsReboot(currentWedConfigValue, currentWedRuntimeEnabled) ? '' : 'none';
+}
+
+function refreshWedRuntimeStatus() {
+	setWedRuntimeStatus(_('getWED: reading...'));
+
+	return callGetWED().then(function(enabled) {
+		currentWedRuntimeEnabled = enabled === true;
+		setWedRuntimeStatus(formatWedRuntimeStatus(currentWedRuntimeEnabled));
+		setWedApplyStatus();
+
+		return currentWedRuntimeEnabled;
+	}).catch(function(err) {
+		setWedRuntimeStatus(_('getWED: unable to read runtime setting'));
+	});
+}
+
+function handleWedReboot(ev) {
+	if (ev)
+		ev.preventDefault();
+
+	return callReboot().then(function(res) {
+		if (res != 0) {
+			ui.addNotification(null, E('p', _('The reboot command failed with code %d').format(res)));
+			L.raise('Error', 'Reboot failed');
+		}
+
+		ui.showModal(_('Rebooting...'), [
+			E('p', { 'class': 'spinning' }, _('Waiting for device...'))
+		]);
+
+		window.setTimeout(function() {
+			ui.showModal(_('Rebooting...'), [
+				E('p', { 'class': 'spinning alert-message warning' },
+					_('Device unreachable! Still waiting for device...'))
+			]);
+		}, 150000);
+
+		ui.awaitReconnect();
+	}).catch(function(e) {
+		ui.addNotification(null, E('p', e.message));
+	});
+}
+
+function reloadWedAfterApply() {
+	const onApplied = function() {
+		document.removeEventListener('uci-applied', onApplied);
+
+		fs.exec('/etc/init.d/advanced_setup', [ 'reload', 'wed' ])
+			.then(refreshWedRuntimeStatus)
+			.catch(function(err) {
+				setWedRuntimeStatus(_('getWED: unable to refresh runtime setting'));
+				ui.addNotification(null, E('p', err.message));
+			});
+	};
+
+	document.addEventListener('uci-applied', onApplied);
+}
 
 return view.extend({
-   // System reboot RPC
-   callReboot: rpc.declare({
-      object: 'system',
-      method: 'reboot',
-      expect: { result: 0 }
-   }),
+	load: function() {
+		return Promise.all([
+			uci.load('advanced'),
+			L.resolveDefault(callGetWED(), false)
+		]);
+	},
 
-   render: function() {
-      let m, s, o;
+	render: function(data) {
+		currentWedRuntimeEnabled = data[1] === true;
+		currentWedConfigValue = '0';
+		currentWedFormValue = '0';
+		let m = new form.Map('advanced');
 
-      m = new form.Map('advanced', _('Advanced Wireless Settings'));
+		if (L.hasSystemFeature('wedoffload')) {
+			let s = m.section(form.TypedSection, 'defaults', _('WED Offloading'),
+				_('Wireless Ethernet Dispatch (WED) offloads part of the Wi-Fi data path in hardware. This can reduce CPU usage and improve routing throughput for wireless clients. Changes are applied on the next reboot.'));
+			let o;
 
-      s = m.section(form.TypedSection, 'defaults', _('Kernel Module & Hardware Acceleration'));
-      s.anonymous = true;
-      s.addremove = false;
+			s.anonymous = true;
+			s.addremove = false;
 
-      s.tab('wed_tab', _('Wireless Ethernet Dispatch (WED) (mt7915e)'));
+			o = s.option(form.ListValue, 'wed_offloading', _('Enable WED'));
+			o.value('0', _('Off'));
+			o.value('1', _('On'));
+			o.default = '0';
+			o.optional = false;
+			o.rmempty = false;
+			o.cfgvalue = function(section_id) {
+				currentWedConfigValue = uci.get('advanced', section_id, 'wed_offloading') || '0';
+				currentWedFormValue = currentWedConfigValue;
+				return currentWedFormValue;
+			};
+			o.onchange = function(ev, section_id, value) {
+				currentWedFormValue = value;
+				setWedApplyStatus();
+			};
+			o.write = function(section_id, value) {
+				if (value !== '0' && value !== '1')
+					return;
 
-      /*
-       * WED TAB - Status & Configuration
-       */
+				currentWedConfigValue = value;
+				currentWedFormValue = value;
+				return uci.set('advanced', section_id, 'wed_offloading', value);
+			};
+			o.remove = function(section_id) {
+				currentWedConfigValue = '0';
+				currentWedFormValue = '0';
+				return uci.set('advanced', section_id, 'wed_offloading', '0');
+			};
 
-      // WED Status: Strictly reflects the saved UCI state
-      o = s.taboption('wed_tab', form.DummyValue, '_wed_status', _('Current WED State'));
-      o.rawhtml = true;
-      o.cfgvalue = function(section_id) {
-         let configEnabled = uci.get('advanced', section_id, 'wed_enable') === '1';
-         return configEnabled ?
-            '<span class="label success">' + _('Running (Enabled)') + '</span>' :
-            '<span class="label">' + _('Stopped (Disabled)') + '</span>';
-      };
+			o = s.option(form.DummyValue, '_wed_apply_status', _('Apply status'));
+			o.rawhtml = true;
+			o.cfgvalue = function(section_id) {
+				currentWedConfigValue = uci.get('advanced', section_id, 'wed_offloading') || '0';
+				currentWedFormValue = currentWedConfigValue;
 
-      o = s.taboption('wed_tab', form.ListValue, "wed_enable", _("WED Mode"),
-         _("Enabling this modifies /etc/modules.d/mt7915e directly. A reboot is required to reload the kernel module."));
-      o.value('0', _("Disabled"));
-      o.value('1', _("Enabled"));
-      o.rmempty = false;
+				return E('span', {}, [
+					E('span', { 'id': wedApplyStatusId },
+						formatWedApplyStatus(currentWedConfigValue, currentWedRuntimeEnabled)),
+					' ',
+					E('button', {
+						'id': wedRebootButtonId,
+						'type': 'button',
+						'class': 'cbi-button cbi-button-action important',
+						'style': wedNeedsReboot(currentWedConfigValue, currentWedRuntimeEnabled) ? null : 'display:none',
+						'click': handleWedReboot
+					}, _('Reboot'))
+				]);
+			};
 
-      o.load = L.bind(function(section_id) {
-         return fs.read('/etc/modules.d/mt7915e').then(L.bind(function(content) {
-            let isEnabled = (content && content.indexOf('wed_enable=1') !== -1);
-            let state = isEnabled ? '1' : '0';
-            uci.set('advanced', section_id, 'wed_enable', state);
-            return state;
-         }, this)).catch(function(e) {
-            return uci.get('advanced', section_id, 'wed_enable') || '0';
-         });
-      }, this);
+			o = s.option(form.Button, '_read_wed_runtime', _('Runtime WED setting'));
+			o.inputtitle = _('Read setting');
+			o.inputstyle = 'action';
+			o.write = function() {};
+			o.remove = function() {};
+			o.onclick = function() {
+				return refreshWedRuntimeStatus();
+			};
 
-      o.write = L.bind(function(section_id, value) {
-         let fileContent = (value === '1') ? 'mt7915e wed_enable=1\n' : 'mt7915e\n';
-         return fs.write('/etc/modules.d/mt7915e', fileContent, 420).then(L.bind(function() {
-            uci.set('advanced', section_id, 'wed_enable', value);
-            ui.addNotification(null, _('Module configuration saved. Reboot required.'), 'info');
-         }, this)).catch(function(e) {
-            ui.addNotification(null, _('Failed to write /etc/modules.d/mt7915e: ') + e.message, 'danger');
-         });
-      }, this);
+			o = s.option(form.DummyValue, '_wed_runtime_output', _('Runtime WED output'));
+			o.rawhtml = true;
+			o.default = E('span', { 'id': wedRuntimeStatusId },
+				formatWedRuntimeStatus(currentWedRuntimeEnabled));
+		}
 
-      /*
-      * SYSTEM ACTIONS (Original Reboot Logic)
-      */
-      s = m.section(form.TypedSection, 'defaults', _('System Actions'));
-      s.anonymous = true;
+		return m.render();
+	},
 
-      o = s.option(form.Button, '_reboot_btn', _('Apply & Reboot Device'));
-      o.inputstyle = 'negative';
-      o.inputtitle = _('Reboot Now');
-
-      o.onclick = L.bind(function(ev) {
-         if (!confirm(_('Reboot now? Changes will be applied and connections dropped.')))
-            return;
-
-         ui.showModal(_('Rebooting...'), [
-            E('p', { 'class': 'spinning' }, _('The system is rebooting. This page will reload automatically once the connection is restored.'))
-         ]);
-
-         this.callReboot().then(L.bind(function() {
-            let checkBack = function() {
-               let script = document.createElement('script');
-               script.onload = function() { window.location.reload(); };
-               script.onerror = function() {
-                  document.body.removeChild(script);
-                  window.setTimeout(checkBack, 5000);
-               };
-               script.src = window.location.protocol + '//' + window.location.hostname +
-                        '/luci-static/resources/luci.js?r=' + Math.random();
-               document.body.appendChild(script);
-            };
-            window.setTimeout(checkBack, 25000);
-         }, this));
-      }, this);
-
-      return m.render();
-   }
+	handleSaveApply: function(ev, mode) {
+		return this.handleSave(ev).then(function() {
+			reloadWedAfterApply();
+			return ui.changes.apply(mode == '0');
+		});
+	}
 });

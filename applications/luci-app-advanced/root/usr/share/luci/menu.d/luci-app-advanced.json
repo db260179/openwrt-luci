@@ -1,51 +1,73 @@
 {
-  "admin/network/advanced": {
-    "title": "Advanced",
-    "order": 60,
-    "action": {
-      "type": "firstchild"
-    },
-    "depends": {
-      "acl": [ "luci-app-advanced" ],
-      "fs": {
-        "/etc/init.d/advanced_setup": "executable"
-      }
-    }
-  },
-
-  "admin/network/advanced/wed": {
-    "title": "WED",
-    "order": 1,
-    "action": {
-      "type": "view",
-      "path": "advanced/wed"
-    }
-  },
-
-  "admin/network/advanced/airtime": {
-    "title": "Airtime Fairness (ATF)",
-    "order": 2,
-    "action": {
-      "type": "view",
-      "path": "advanced/airtime"
-    }
-  },
-
-  "admin/network/advanced/edcca": {
-    "title": "EDCCA",
-    "order": 3,
-    "action": {
-      "type": "view",
-      "path": "advanced/edcca"
-    }
-  },
-
-  "admin/network/advanced/packet_steering": {
-    "title": "Packet Steering",
-    "order": 4,
-    "action": {
-      "type": "view",
-      "path": "advanced/packet_steering"
-    }
-  }
+	"admin/network/advanced/": {
+		"title": "Advanced",
+		"order": 60,
+		"action": {
+			"type": "firstchild"
+		},
+		"depends": {
+			"acl": [ "luci-app-advanced" ],
+			"fs": {
+				"/etc/init.d/advanced_setup": "executable"
+			}
+		}
+	},
+	"admin/network/advanced/wed": {
+		"title": "WED Offloading",
+		"order": 1,
+		"action": {
+			"type": "view",
+			"path": "advanced/wed"
+		}
+	},
+	"admin/network/advanced/airtime": {
+		"title": "Airtime Fairness (ATF/WATF)",
+		"order": 2,
+		"action": {
+			"type": "view",
+			"path": "advanced/airtime"
+		}
+	},
+	"admin/network/advanced/edcca": {
+		"title": "EDCCA",
+		"order": 3,
+		"action": {
+			"type": "view",
+			"path": "advanced/edcca"
+		}
+	},
+	"admin/network/advanced/packet_steering": {
+		"title": "Packet Steering",
+		"order": 4,
+		"action": {
+			"type": "view",
+			"path": "advanced/packet_steering"
+		}
+	},
+	"admin/network/advanced/hqos": {
+		"title": "HQoS",
+		"order": 5,
+		"action": {
+			"type": "view",
+			"path": "advanced/hqos"
+		},
+		"depends": {
+			"fs": {
+				"/sbin/mtkhnat": "executable"
+			}
+		}
+	},
+	"admin/network/advanced/cake": {
+		"title": "CAKE Settings",
+		"order": 6,
+		"action": {
+			"type": "view",
+			"path": "advanced/cake"
+		},
+		"depends": {
+			"fs": {
+				"/sys/kernel/debug/cake_mq/sync_time_ns": "file"
+			}
+		}
+	}
 }
